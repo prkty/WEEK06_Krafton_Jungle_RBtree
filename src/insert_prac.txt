@@ -1,0 +1,27 @@
+새로운 노드(z)를 삽입하기 위해선
+1. red로 초기화하여 키와 함께 입력
+2. 트리상 맨끝 리프노드 NIL에 삽입하기
+
+
+해당 과정들은 검사하는 z의 부모 노드가 빨간색이 아닐때까지 수행하면 된다.(while (z->parent->color == RBTREE_BLACK))
+z가 오른쪽에 있는 케이스
+z의 부모가 빨간색일때(z->parent == z->parent->right)
+z의 삼촌이 빨간색일 때(z->parent->parent->left)
+z의 부모님을 블랙으로 변경(z->parent = RBTREE_BLACK)
+z의 삼촌을 블랙으로 변경 (z->parent = RBTREE_BLACK)
+z의 조부모는 빨강으로 변경(z->parent->parent = RBTREE_RED)
+위 과정을 마쳤으면 
+z를 z의 조부모로 옮김(z->parent->parent)
+
+안에의 else
+만약, z가 z의 부모님,
+
+
+
+
+
+else
+z가 왼쪽에 있는 케이스
+z의 부모가 빨간색일때(z->parent == z->parent->left)
+z의 삼촌이 빨간색일 때(z->parent->parent->right)
+z의 삼촌이 부모님을 블랙으로 변경 
