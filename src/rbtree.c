@@ -145,7 +145,7 @@ node_t *rbtree_insert(rbtree *t, const key_t key) {
     // 수정 작업 수행(트리와 새 노드값을 넘김)
     insert_fix(t, new_node);
     }
-  return t->root;
+  return new_node;
 }
 
 // 삽입에서 넘긴 값을 토대로 수정 수행
@@ -205,26 +205,65 @@ while (new_node -> parent -> color == RBTREE_RED) {   // 삽입한 부모 노드
   t -> root -> color = RBTREE_BLACK;  // 루트는 항상 검은색이어야하는 규칙(루트의 부모는 없기 때문에 색을 검은색으로 지정해도됨)
 }
 
-
-
+// 검색 완료된 트리는 메모리에서 삭제해야함
 void delete_rbtree(rbtree *t) {
-  // TODO: reclaim the tree nodes's memory
+  free(t -> root);
+  free(t -> nil);
   free(t);
 }
 
+// 노드 검색
 node_t *rbtree_find(const rbtree *t, const key_t key) {
-  // TODO: implement find
-  return t->root;
+  node_t *cur = t -> root;    // cur은 루트부터 시작
+
+  while(cur != t -> nil) {    // cur 현재 확인 중인 노드가 NIL 될때까지 실행
+    if(cur -> key == key) {   // 현재 비교하는 cur과 키값이 같을때
+      return cur;             // cur 반환
+    }
+    if(cur -> key < key) {    // 지금 확인중인 cur보다 키값이 클때
+      cur = cur -> right;     // 오른쪽 자식으로 검색
+    }
+    else {
+      cur = cur -> left;      // cur보다 키값이 작을때, 왼쪽 자식으로 검색
+    }
+  }
+  if(cur == t -> nil) {      // cur이 없을때(트리가 없을때)
+    return NULL;             // NULL 반환
+  }
+  return cur;                // 값 리턴
 }
 
+// 최솟값 탐색
 node_t *rbtree_min(const rbtree *t) {
-  // TODO: implement find
-  return t->root;
+  node_t *cur = t -> root;    // cur은 루트부터 시작
+
+  if(cur == t -> nil){   // 먼저 트리에 아무것도 없을 예외상황을 처리해야한다
+    return NULL;         // 밑에 while문에 포함시키면 RB트리에서 맨밑이 항상 NIL이라 항상 NULL 나옴
+  }
+
+  node_t *min = NULL;
+  while(cur != t -> nil) {    // NIL 만나기 직전까지 진행
+    min = cur;                // NIL 만나기전 현재 노드를 기억
+    cur = cur -> left;        // 최솟값으로 left로만 가야함
+  }
+  return min;                 // 값 리턴
 }
 
+// 최솟값 탐색
 node_t *rbtree_max(const rbtree *t) {
-  // TODO: implement find
-  return t->root;
+  node_t *cur = t -> root;    // cur은 루트부터 시작
+
+  if(cur == t -> nil){   // 먼저 트리에 아무것도 없을 예외상황을 처리해야한다
+    return NULL;         // 밑에 while문에 포함시키면 RB트리에서 맨밑이 항상 NIL이라 항상 NULL 나옴
+  }
+
+  // 최댓값 검색
+  node_t *max = NULL;
+  while(cur != t -> nil) {    // NIL 만나기 직전까지 진행
+    max = cur;                // NIL 만나기전 현재 노드를 기억
+    cur = cur -> right;       // 최댓값으로 right로만 가야함
+  }
+  return max;                 // 값 리턴
 }
 
 int rbtree_erase(rbtree *t, node_t *p) {
