@@ -205,11 +205,22 @@ while (new_node -> parent -> color == RBTREE_RED) {   // 삽입한 부모 노드
   t -> root -> color = RBTREE_BLACK;  // 루트는 항상 검은색이어야하는 규칙(루트의 부모는 없기 때문에 색을 검은색으로 지정해도됨)
 }
 
-// 검색 완료된 트리는 메모리에서 삭제해야함
+// RB 트리는 자식과 부모가 연계되어 있으므로 노드 자체의 메모리해제를 따로 해야한다.
+// 왼쪽 자식 -> 오른쪽 자식 -> 자기자신 순으로 해제한다.
+void free_node(rbtree *t, node_t *del) {
+  if(del == t -> nil) {         // 받은 노드가 NULL이면 그냥 리턴
+    return;
+  }
+  free_node(t, del -> left);    // 왼쪽 자식 메모리 해제하기 위해 재귀
+  free_node(t, del -> right);   // 오른쪽 자식 메모리 해제하기 위해 재귀
+  free(del);                    // 메모리 해제
+}
+
+// 모든 노드들 해제 후! NIL, RB 트리 구조체 해제
 void delete_rbtree(rbtree *t) {
-  free(t -> root);
-  free(t -> nil);
-  free(t);
+  free_node(t, t -> root);      // 루트를 시작점으로 모든 자식 노드를 순회하며 해제
+  free(t -> nil);               // 공통의 NIL들 해제
+  free(t);                      // 트리 구조체 해제
 }
 
 // 노드 검색
@@ -271,7 +282,28 @@ int rbtree_erase(rbtree *t, node_t *p) {
   return 0;
 }
 
+// 사용자가 호출하는 함수 역할로 외부에선 해당 함수만 호출(트리, 배열, 사이즈 n만 호출해 사용)
 int rbtree_to_array(const rbtree *t, key_t *arr, const size_t n) {
-  // TODO: implement to_array
-  return 0;
+  int count = 0;      // count 0으로 초기화
+  to_array(t, arr, n, t -> root, &count);  
+  // &count인 이유는 하단의 *count가 포인터로 인자를 줄려면 & 주소로 보내줘야한다.(값 변경을 반영)
+
+  return 0;    // 값 리턴
+}
+
+// 키값이 주어진 n 크기까지의 배열의 개수를 출력(중위순회)
+// 내부에서 쓰는 재귀함수로 실제 트리를 순회하며 데이터를 배열에 넣음
+void to_array(const rbtree* t, key_t *arr, const size_t n, node_t* cur, int* count) {
+  if(*count >= n || cur == t -> nil) return;   
+  // count는 지금까지 배열에 저장한 key의 개수, n은 배열에 담을 수 있는 최대 개수 
+  // 그러므로count가 주어진 n보다 커지거나 같아지면 바로 리턴
+  // 맨마지막인 NIL까지 내려가서 순회 종료
+
+  // 중위순회
+  to_array(t, arr, n, cur -> left, count);   // 왼쪽 자식 맨끝부터 시작
+  if(*count < n) {                           // n횟수만큼 카운트가 진행
+    arr[*count] = cur -> key;                // 배열에 현재 진행중인 키를 저장
+    *count += 1;                             // 배열에 저장한 횟수 +1
+  }
+  to_array(t, arr, n, cur -> right, count);  // 오른쪽을 순회하고 끝냄
 }
